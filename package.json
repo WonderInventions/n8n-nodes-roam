@@ -1,0 +1,63 @@
+{
+  "name": "n8n-nodes-roam",
+  "version": "0.1.1",
+  "description": "n8n community node to work with the Roam API",
+  "license": "MIT",
+  "homepage": "https://ro.am",
+  "keywords": [
+    "n8n-community-node-package"
+  ],
+  "author": {
+    "name": "Rob Figueiredo",
+    "email": "robfig@ro.am"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WonderInventions/n8n-nodes-roam"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
+  },
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/RoamOAuth2Api.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Roam/Roam.node.js",
+      "dist/nodes/Roam/RoamTrigger.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "^0.8.0",
+    "@release-it/conventional-changelog": "^10.0.1",
+    "@types/luxon": "^3.7.1",
+    "@types/node": "^20.0.0",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "n8n-node-dev": "^0.24.0",
+    "prettier": "^3.6.2",
+    "release-it": "^19.0.4"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "dependencies": {
+    "luxon": "^3.7.2",
+    "typescript": "^5.9.2"
+  }
+}

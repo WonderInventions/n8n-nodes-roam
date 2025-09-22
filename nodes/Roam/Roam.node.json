@@ -1,0 +1,19 @@
+{
+	"node": "n8n-nodes-roam",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Communication", "Productivity"],
+	"description": "Interact with Roam, your virtual HQ",
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "https://developer.ro.am"
+			}
+		]
+	},
+	"aliases": [],
+	"subcategories": {
+		"Communication": ["Chat", "Video"],
+		"Productivity": ["Meetings", "Collaboration"]
+	}
+}

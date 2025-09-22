@@ -1,0 +1,13 @@
+#!/bin/bash
+echo "Setting up NPM token for publishing..."
+echo ""
+echo "1. Go to: https://www.npmjs.com/settings/tokens"
+echo "2. Generate a new 'Automation' token with 'Publish' permission"
+echo "3. Copy the token and run:"
+echo ""
+echo "npm config set //registry.npmjs.org/:_authToken YOUR_TOKEN_HERE"
+echo ""
+echo "Or export it as an environment variable:"
+echo "export NPM_TOKEN=YOUR_TOKEN_HERE"
+echo ""
+echo "Then run: npm run release"
