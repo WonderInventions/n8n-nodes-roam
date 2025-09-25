@@ -26,16 +26,17 @@ export class RoamApi implements ICredentialType {
       displayName: "Base URL",
       name: "baseUrl",
       type: "hidden",
-      description: "Set this to http://localhost:5587 for local development.",
       required: false,
+      description: "Local Development: Set this to http://localhost:5587",
       default: "https://api.ro.am",
     },
   ];
 
   test = {
     request: {
-      baseURL: '={{$credentials?.baseUrl || "https://api.ro.am"}}',
-      url: "/v0/token.info",
+      baseURL: '={{ $credentials.baseUrl }}',
+      // Local Development: Set this to http://localhost:5587/v0/token.info
+      url: `/v0/token.info`,
       headers: {
         Authorization: '=Bearer {{$credentials?.apiKey}}',
       },

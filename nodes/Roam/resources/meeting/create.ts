@@ -41,6 +41,7 @@ export const createDescription: MeetingProperties = [
 		displayName: 'Start Time',
 		name: 'start',
 		type: 'dateTime',
+		required: true,
 		default: '',
 		displayOptions: {
 			show: {
@@ -53,6 +54,7 @@ export const createDescription: MeetingProperties = [
 		displayName: 'End Time',
 		name: 'end',
 		type: 'dateTime',
+		required: true,
 		default: '',
 		displayOptions: {
 			show: {

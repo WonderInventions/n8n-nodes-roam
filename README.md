@@ -57,6 +57,13 @@ To use this node, you need to authenticate with Roam's API using OAuth2.
 2. **Action**: Roam - Send Message (notify team about the submission)
 3. **Action**: Roam - Create Meeting Link (schedule a follow-up meeting)
 
+## Development
+
+To run n8n locally: 
+
+- Run `ngrok http 5678` to support incoming webhooks. Set `WEBHOOK_URL` to the ngrok URL.
+- Run `npm run dev`
+
 ## Resources
 
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
