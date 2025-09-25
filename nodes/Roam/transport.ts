@@ -29,15 +29,15 @@ export async function apiRequest(
   qs: IDataObject = {},
   optionOverrides: Partial<IHttpRequestOptions> = {}
 ) {
-  const credentials = (await this.getCredentials("roamOAuth2Api")) as
+  const credentials = (await this.getCredentials("roamApi")) as
     | (ICredentialDataDecryptedObject & {
+        apiKey: string;
         baseUrl?: string;
-        clientId?: string;
       })
     | undefined;
 
   if (!credentials) {
-    throw new Error("No credentials returned for Roam OAuth2 API");
+    throw new Error("No credentials returned for Roam API");
   }
 
   const baseUrl = (credentials.baseUrl as string | undefined) ?? "https://api.ro.am";
@@ -56,9 +56,7 @@ export async function apiRequest(
   };
 
   const headers = ensureHeaders(requestOptions.headers);
-  if (credentials.clientId) {
-    headers["X-CLIENT-ID"] = credentials.clientId as string;
-  }
+  headers["Authorization"] = `Bearer ${credentials.apiKey}`;
   requestOptions.headers = headers;
 
   if (Object.keys(requestOptions.body as IDataObject).length === 0) {
@@ -79,7 +77,7 @@ export async function apiRequest(
   }
 
   try {
-    const response = await this.helpers.requestOAuth2!.call(this, "roamOAuth2Api", requestOptions);
+    const response = await this.helpers.request(requestOptions);
     console.log(`[Roam API Response] ${method} ${endpoint} - Success`);
     return response;
   } catch (error) {

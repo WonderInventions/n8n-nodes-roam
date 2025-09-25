@@ -42,7 +42,7 @@ export class RoamTrigger implements INodeType {
     outputs: [NodeConnectionType.Main],
     credentials: [
       {
-        name: "roamOAuth2Api",
+        name: "roamApi",
         required: true,
       },
     ],

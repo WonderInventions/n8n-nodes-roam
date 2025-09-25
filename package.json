@@ -34,7 +34,7 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/RoamOAuth2Api.credentials.js"
+      "dist/credentials/RoamApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/Roam/Roam.node.js",
