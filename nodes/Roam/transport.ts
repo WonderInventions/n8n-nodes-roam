@@ -1,3 +1,4 @@
+import { NodeApiError } from "n8n-workflow";
 import type {
   ICredentialDataDecryptedObject,
   IDataObject,
@@ -7,6 +8,7 @@ import type {
   IHttpRequestOptions,
   ILoadOptionsFunctions,
   IWebhookFunctions,
+  JsonObject,
 } from "n8n-workflow";
 
 type RoamFunctions = IExecuteFunctions | ILoadOptionsFunctions | IWebhookFunctions | IHookFunctions;
@@ -67,24 +69,27 @@ export async function apiRequest(
     delete requestOptions.qs;
   }
 
-  // Log the request details
-  console.log(`[Roam API Request] ${method} ${baseUrl}${endpoint}`);
+  this.logger.debug(`[Roam API Request] ${method} ${baseUrl}${endpoint}`);
   if (requestOptions.body && Object.keys(requestOptions.body).length > 0) {
-    console.log(`[Roam API Request Body]`, JSON.stringify(requestOptions.body, null, 2));
+    this.logger.debug(
+      `[Roam API Request Body] ${JSON.stringify(requestOptions.body, null, 2)}`,
+    );
   }
   if (requestOptions.qs && Object.keys(requestOptions.qs).length > 0) {
-    console.log(`[Roam API Request Query]`, JSON.stringify(requestOptions.qs, null, 2));
+    this.logger.debug(`[Roam API Request Query] ${JSON.stringify(requestOptions.qs, null, 2)}`);
   }
 
   try {
-    const response = await this.helpers.request(requestOptions);
-    console.log(`[Roam API Response] ${method} ${endpoint} - Success`);
+    const response = await this.helpers.httpRequest(requestOptions);
+    this.logger.debug(`[Roam API Response] ${method} ${endpoint} - Success`);
     return response;
   } catch (error) {
-    console.error(`[Roam API Error] ${method} ${endpoint} - ${error.message}`);
+    this.logger.error(`[Roam API Error] ${method} ${endpoint}`);
     if (requestOptions.body) {
-      console.error(`[Roam API Error Body]`, JSON.stringify(requestOptions.body, null, 2));
+      this.logger.error(
+        `[Roam API Error Body] ${JSON.stringify(requestOptions.body, null, 2)}`,
+      );
     }
-    throw error;
+    throw new NodeApiError(this.getNode(), error as JsonObject);
   }
 }

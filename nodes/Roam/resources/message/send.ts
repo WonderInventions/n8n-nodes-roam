@@ -78,5 +78,11 @@ export async function send(this: IExecuteFunctions, index: number): Promise<INod
 
   const responseData = await apiRequest.call(this, "POST", "/v1/chat.sendMessage", body);
 
-  return this.helpers.returnJsonArray(responseData as IDataObject[]);
+  const executionData = this.helpers.returnJsonArray(responseData as IDataObject[]);
+
+  return this.helpers.constructExecutionMetaData(executionData, {
+    itemData: {
+      item: index,
+    },
+  });
 }
