@@ -32,11 +32,16 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 To use this node, you need to authenticate with Roam's API using OAuth2.
 
 1. Go to your Roam developer account at [developer.ro.am](https://developer.ro.am)
-2. Create an OAuth2 application
-3. Configure the redirect URI for n8n (usually `https://your-n8n-instance.com/rest/oauth2-credential/callback`)
-4. Copy the Client ID and Client Secret
-5. In n8n, create a new credential of type "Roam OAuth2 API"
-6. Fill in your Client ID, Client Secret, and configure the OAuth2 flow
+2. Create an API Key application
+3. Enable permissions corresponding to what you want it to do: 
+  - Actions
+    - Send chat message: `chat:send_message`, `groups:read`
+    - Create meeting link: `meetinglink:write`
+  - Webhooks: `webhook:write`
+    - New Recording: `recordings:read`
+    - New Transcript: `transcript:read`
+3. In n8n, create a new credential of type "Roam API Key"
+4. Fill in your secret key
 
 ## Compatibility
 
