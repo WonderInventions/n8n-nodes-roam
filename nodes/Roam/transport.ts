@@ -69,27 +69,10 @@ export async function apiRequest(
     delete requestOptions.qs;
   }
 
-  this.logger.debug(`[Roam API Request] ${method} ${baseUrl}${endpoint}`);
-  if (requestOptions.body && Object.keys(requestOptions.body).length > 0) {
-    this.logger.debug(
-      `[Roam API Request Body] ${JSON.stringify(requestOptions.body, null, 2)}`,
-    );
-  }
-  if (requestOptions.qs && Object.keys(requestOptions.qs).length > 0) {
-    this.logger.debug(`[Roam API Request Query] ${JSON.stringify(requestOptions.qs, null, 2)}`);
-  }
-
   try {
     const response = await this.helpers.httpRequest(requestOptions);
-    this.logger.debug(`[Roam API Response] ${method} ${endpoint} - Success`);
     return response;
   } catch (error) {
-    this.logger.error(`[Roam API Error] ${method} ${endpoint}`);
-    if (requestOptions.body) {
-      this.logger.error(
-        `[Roam API Error Body] ${JSON.stringify(requestOptions.body, null, 2)}`,
-      );
-    }
     throw new NodeApiError(this.getNode(), error as JsonObject);
   }
 }

@@ -1,4 +1,4 @@
-import type { ICredentialType, INodeProperties } from "n8n-workflow";
+import type { IAuthenticateGeneric, ICredentialType, INodeProperties } from "n8n-workflow";
 
 export class RoamApi implements ICredentialType {
   name = "roamApi";
@@ -32,14 +32,20 @@ export class RoamApi implements ICredentialType {
     },
   ];
 
+  authenticate: IAuthenticateGeneric = {
+    type: "generic",
+    properties: {
+      headers: {
+        Authorization: '=Bearer {{$credentials?.apiKey}}',
+      },
+    },
+  };
+
   test = {
     request: {
       baseURL: '={{ $credentials.baseUrl }}',
       // Local Development: Set this to http://localhost:5587/v0/token.info
       url: `/v0/token.info`,
-      headers: {
-        Authorization: '=Bearer {{$credentials?.apiKey}}',
-      },
     },
   };
 }

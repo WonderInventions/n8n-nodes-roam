@@ -145,12 +145,10 @@ export class RoamTrigger implements INodeType {
     const inputData = this.getInputData();
     if (inputData && inputData.length > 0 && inputData[0].json) {
       // We're triggered by webhook - use the webhook data instead of API call
-      this.logger.info(`Using webhook data instead of API polling`);
       return [inputData];
     }
 
     // Manual execution - fetch data from API
-    this.logger.info(`Manual execution - fetching data from API`);
     const listResponse = (await apiRequest.call(
       this,
       "GET",
