@@ -13,13 +13,6 @@ import type {
 
 type RoamFunctions = IExecuteFunctions | ILoadOptionsFunctions | IWebhookFunctions | IHookFunctions;
 
-function ensureHeaders(headers: IDataObject | undefined) {
-  if (headers === undefined) {
-    return {} as IDataObject;
-  }
-  return headers;
-}
-
 /**
  * Make an API request to Roam
  */
@@ -32,10 +25,7 @@ export async function apiRequest(
   optionOverrides: Partial<IHttpRequestOptions> = {}
 ) {
   const credentials = (await this.getCredentials("roamApi")) as
-    | (ICredentialDataDecryptedObject & {
-        apiKey: string;
-        baseUrl?: string;
-      })
+    | (ICredentialDataDecryptedObject & { baseUrl?: string })
     | undefined;
 
   if (!credentials) {
@@ -57,10 +47,6 @@ export async function apiRequest(
     ...optionOverrides,
   };
 
-  const headers = ensureHeaders(requestOptions.headers);
-  headers["Authorization"] = `Bearer ${credentials.apiKey}`;
-  requestOptions.headers = headers;
-
   if (Object.keys(requestOptions.body as IDataObject).length === 0) {
     delete requestOptions.body;
   }
@@ -70,8 +56,7 @@ export async function apiRequest(
   }
 
   try {
-    const response = await this.helpers.httpRequest(requestOptions);
-    return response;
+    return await this.helpers.httpRequestWithAuthentication.call(this, "roamApi", requestOptions);
   } catch (error) {
     throw new NodeApiError(this.getNode(), error as JsonObject);
   }
