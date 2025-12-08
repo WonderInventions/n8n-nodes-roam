@@ -31,7 +31,7 @@ export class RoamTrigger implements INodeType {
   description: INodeTypeDescription = {
     displayName: "Roam Trigger",
     name: "roamTrigger",
-    icon: "fa:robot",
+    icon: { light: "file:roam.svg", dark: "file:roam.dark.svg" },
     group: ["trigger"],
     version: 1,
     description: "Handle Roam webhooks",
