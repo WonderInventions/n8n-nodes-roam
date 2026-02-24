@@ -11,6 +11,7 @@ import { NodeConnectionType } from "n8n-workflow";
 
 import * as meeting from "./resources/meeting";
 import * as message from "./resources/message";
+import * as transcript from "./resources/transcript";
 
 import type { Roam as RoamType } from "./interfaces";
 import { apiRequest } from "./transport";
@@ -56,6 +57,14 @@ async function router(this: IExecuteFunctions): Promise<INodeExecutionData[]> {
       } else if (roam.resource === "meeting") {
         if (roam.operation === "create") {
           operationResult.push(...(await meeting.create.call(this, i)));
+        }
+      } else if (roam.resource === "transcript") {
+        if (roam.operation === "list") {
+          operationResult.push(...(await transcript.list.call(this, i)));
+        } else if (roam.operation === "info") {
+          operationResult.push(...(await transcript.info.call(this, i)));
+        } else if (roam.operation === "prompt") {
+          operationResult.push(...(await transcript.prompt.call(this, i)));
         }
       }
     } catch (err) {
@@ -103,11 +112,16 @@ export class Roam implements INodeType {
             name: "Message",
             value: "message",
           },
+          {
+            name: "Transcript",
+            value: "transcript",
+          },
         ],
         default: "message",
       },
       ...message.messageDescription,
       ...meeting.meetingDescription,
+      ...transcript.transcriptDescription,
     ],
     subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
     version: 1,
