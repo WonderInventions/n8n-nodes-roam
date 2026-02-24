@@ -14,7 +14,6 @@ export const listDescription: TranscriptProperties = [
 		displayName: 'After',
 		name: 'after',
 		type: 'dateTime',
-		required: false,
 		default: '',
 		description: 'Only return transcripts after this date',
 		displayOptions: {
@@ -28,7 +27,6 @@ export const listDescription: TranscriptProperties = [
 		displayName: 'Before',
 		name: 'before',
 		type: 'dateTime',
-		required: false,
 		default: '',
 		description: 'Only return transcripts before this date',
 		displayOptions: {
@@ -42,9 +40,8 @@ export const listDescription: TranscriptProperties = [
 		displayName: 'Limit',
 		name: 'limit',
 		type: 'number',
-		required: false,
-		default: 10,
-		description: 'Maximum number of transcripts to return (1-100)',
+		default: 50,
+		description: 'Max number of results to return',
 		typeOptions: {
 			minValue: 1,
 			maxValue: 100,
