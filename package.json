@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-roam",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "n8n community node to work with the Roam API",
   "license": "MIT",
   "homepage": "https://ro.am",
