@@ -12,6 +12,8 @@ import { NodeConnectionType } from "n8n-workflow";
 import * as meeting from "./resources/meeting";
 import * as message from "./resources/message";
 import * as transcript from "./resources/transcript";
+import * as onairEvent from "./resources/onairEvent";
+import * as onairGuest from "./resources/onairGuest";
 
 import type { Roam as RoamType } from "./interfaces";
 import { apiRequest } from "./transport";
@@ -66,6 +68,32 @@ async function router(this: IExecuteFunctions): Promise<INodeExecutionData[]> {
         } else if (roam.operation === "prompt") {
           operationResult.push(...(await transcript.prompt.call(this, i)));
         }
+      } else if (roam.resource === "onairEvent") {
+        if (roam.operation === "list") {
+          operationResult.push(...(await onairEvent.list.call(this, i)));
+        } else if (roam.operation === "info") {
+          operationResult.push(...(await onairEvent.info.call(this, i)));
+        } else if (roam.operation === "create") {
+          operationResult.push(...(await onairEvent.create.call(this, i)));
+        } else if (roam.operation === "update") {
+          operationResult.push(...(await onairEvent.update.call(this, i)));
+        } else if (roam.operation === "cancel") {
+          operationResult.push(...(await onairEvent.cancel.call(this, i)));
+        }
+      } else if (roam.resource === "onairGuest") {
+        if (roam.operation === "list") {
+          operationResult.push(...(await onairGuest.list.call(this, i)));
+        } else if (roam.operation === "info") {
+          operationResult.push(...(await onairGuest.info.call(this, i)));
+        } else if (roam.operation === "add") {
+          operationResult.push(...(await onairGuest.add.call(this, i)));
+        } else if (roam.operation === "update") {
+          operationResult.push(...(await onairGuest.update.call(this, i)));
+        } else if (roam.operation === "remove") {
+          operationResult.push(...(await onairGuest.remove.call(this, i)));
+        } else if (roam.operation === "listAttendance") {
+          operationResult.push(...(await onairGuest.listAttendance.call(this, i)));
+        }
       }
     } catch (err) {
       if (this.continueOnFail()) {
@@ -113,6 +141,14 @@ export class Roam implements INodeType {
             value: "message",
           },
           {
+            name: "On-Air Event",
+            value: "onairEvent",
+          },
+          {
+            name: "On-Air Guest",
+            value: "onairGuest",
+          },
+          {
             name: "Transcript",
             value: "transcript",
           },
@@ -122,6 +158,8 @@ export class Roam implements INodeType {
       ...message.messageDescription,
       ...meeting.meetingDescription,
       ...transcript.transcriptDescription,
+      ...onairEvent.onairEventDescription,
+      ...onairGuest.onairGuestDescription,
     ],
     subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
     version: 1,
