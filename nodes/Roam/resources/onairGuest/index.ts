@@ -4,6 +4,7 @@ import { infoDescription } from './info';
 import { addDescription } from './add';
 import { updateDescription } from './update';
 import { removeDescription } from './remove';
+import { listAttendanceDescription } from './listAttendance';
 
 const showOnlyForOnairGuest = {
 	resource: ['onairGuest'],
@@ -32,6 +33,12 @@ export const onairGuestDescription: INodeProperties[] = [
 				action: 'Get guest info',
 			},
 			{
+				name: 'List Attendance',
+				value: 'listAttendance',
+				description: 'Get attendance report for an event',
+				action: 'List attendance',
+			},
+			{
 				name: 'List Guests',
 				value: 'list',
 				description: 'List guests for an event',
@@ -55,6 +62,7 @@ export const onairGuestDescription: INodeProperties[] = [
 	...addDescription,
 	...infoDescription,
 	...listDescription,
+	...listAttendanceDescription,
 	...removeDescription,
 	...updateDescription,
 ];
@@ -62,5 +70,6 @@ export const onairGuestDescription: INodeProperties[] = [
 export { add } from './add';
 export { info } from './info';
 export { list } from './list';
+export { listAttendance } from './listAttendance';
 export { remove } from './remove';
 export { update } from './update';

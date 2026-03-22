@@ -1,8 +1,8 @@
 import type { IExecuteFunctions, IDataObject, INodeExecutionData } from 'n8n-workflow';
 import { apiRequest } from '../../transport';
-import type { OnairAttendanceProperties } from '../../interfaces';
+import type { OnairGuestProperties } from '../../interfaces';
 
-export const listDescription: OnairAttendanceProperties = [
+export const listAttendanceDescription: OnairGuestProperties = [
 	{
 		displayName: 'Event ID',
 		name: 'eventId',
@@ -12,14 +12,14 @@ export const listDescription: OnairAttendanceProperties = [
 		description: 'The identifier of the event',
 		displayOptions: {
 			show: {
-				operation: ['list'],
-				resource: ['onairAttendance'],
+				operation: ['listAttendance'],
+				resource: ['onairGuest'],
 			},
 		},
 	},
 ];
 
-export async function list(
+export async function listAttendance(
 	this: IExecuteFunctions,
 	index: number,
 ): Promise<INodeExecutionData[]> {

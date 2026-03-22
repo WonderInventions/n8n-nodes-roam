@@ -14,7 +14,6 @@ import * as message from "./resources/message";
 import * as transcript from "./resources/transcript";
 import * as onairEvent from "./resources/onairEvent";
 import * as onairGuest from "./resources/onairGuest";
-import * as onairAttendance from "./resources/onairAttendance";
 
 import type { Roam as RoamType } from "./interfaces";
 import { apiRequest } from "./transport";
@@ -92,10 +91,8 @@ async function router(this: IExecuteFunctions): Promise<INodeExecutionData[]> {
           operationResult.push(...(await onairGuest.update.call(this, i)));
         } else if (roam.operation === "remove") {
           operationResult.push(...(await onairGuest.remove.call(this, i)));
-        }
-      } else if (roam.resource === "onairAttendance") {
-        if (roam.operation === "list") {
-          operationResult.push(...(await onairAttendance.list.call(this, i)));
+        } else if (roam.operation === "listAttendance") {
+          operationResult.push(...(await onairGuest.listAttendance.call(this, i)));
         }
       }
     } catch (err) {
@@ -144,10 +141,6 @@ export class Roam implements INodeType {
             value: "message",
           },
           {
-            name: "On-Air Attendance",
-            value: "onairAttendance",
-          },
-          {
             name: "On-Air Event",
             value: "onairEvent",
           },
@@ -167,7 +160,6 @@ export class Roam implements INodeType {
       ...transcript.transcriptDescription,
       ...onairEvent.onairEventDescription,
       ...onairGuest.onairGuestDescription,
-      ...onairAttendance.onairAttendanceDescription,
     ],
     subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
     version: 1,
