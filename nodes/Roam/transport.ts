@@ -20,6 +20,11 @@ type RoamFunctions = IExecuteFunctions | ILoadOptionsFunctions | IWebhookFunctio
 // read from package.json so a release only bumps it in one place.
 const ROAM_USER_AGENT = `n8n-nodes-roam/${version}`;
 
+// Roam API version this node is built against, sent as `Roam-Version` so the
+// v1 response contract is pinned to this release rather than to whenever the
+// API key was created. Bump deliberately, in lockstep with the parsing code.
+const ROAM_API_VERSION = "2026-06-01";
+
 /**
  * Make an API request to Roam
  */
@@ -49,6 +54,7 @@ export async function apiRequest(
       Accept: "application/json",
       "Content-Type": "application/json",
       "User-Agent": ROAM_USER_AGENT,
+      "Roam-Version": ROAM_API_VERSION,
     },
     body,
     qs,
