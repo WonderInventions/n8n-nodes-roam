@@ -25,6 +25,31 @@ const EVENT_MAP: Record<string, { apiValue: string; listEndpoint: string; listPr
       listEndpoint: "/v0/transcript.list",
       listProperty: "transcripts",
     },
+    onairEventCreated: {
+      apiValue: "onair.event.created",
+      listEndpoint: "/v1/onair.event.list",
+      listProperty: "events",
+    },
+    onairEventUpdated: {
+      apiValue: "onair.event.updated",
+      listEndpoint: "/v1/onair.event.list",
+      listProperty: "events",
+    },
+    onairEventCanceled: {
+      apiValue: "onair.event.canceled",
+      listEndpoint: "/v1/onair.event.list",
+      listProperty: "events",
+    },
+    onairGuestRsvp: {
+      apiValue: "onair.guest.rsvp",
+      listEndpoint: "/v1/onair.event.list",
+      listProperty: "events",
+    },
+    onairGuestAdded: {
+      apiValue: "onair.guest.added",
+      listEndpoint: "/v1/onair.event.list",
+      listProperty: "events",
+    },
   };
 
 export class RoamTrigger implements INodeType {
@@ -70,6 +95,36 @@ export class RoamTrigger implements INodeType {
             name: "New Transcript",
             value: "transcriptSaved",
             description: "Triggers when a new transcript is saved",
+          },
+          {
+            name: "On-Air Event Canceled",
+            value: "onairEventCanceled",
+            description: "Triggers when an On-Air event is canceled",
+            action: "An On-Air event is canceled",
+          },
+          {
+            name: "On-Air Event Created",
+            value: "onairEventCreated",
+            description: "Triggers when a new On-Air event is created",
+            action: "An On-Air event is created",
+          },
+          {
+            name: "On-Air Event Updated",
+            value: "onairEventUpdated",
+            description: "Triggers when an On-Air event is updated",
+            action: "An On-Air event is updated",
+          },
+          {
+            name: "On-Air Guest Added",
+            value: "onairGuestAdded",
+            description: "Triggers when guest(s) are added to an On-Air event",
+            action: "A guest is added to an On-Air event",
+          },
+          {
+            name: "On-Air Guest RSVP",
+            value: "onairGuestRsvp",
+            description: "Triggers when a guest's RSVP status changes",
+            action: "A guest RSVP changes on an On-Air event",
           },
         ],
         default: "recordingSaved",
