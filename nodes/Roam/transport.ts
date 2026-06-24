@@ -13,6 +13,11 @@ import type {
 
 type RoamFunctions = IExecuteFunctions | ILoadOptionsFunctions | IWebhookFunctions | IHookFunctions;
 
+// Advertised to the Roam appserver on every request for version attribution in
+// logs and Datadog (@plugin.name:n8n-nodes-roam / @plugin.version). Keep in sync
+// with package.json "version".
+const ROAM_USER_AGENT = "n8n-nodes-roam/0.1.11";
+
 /**
  * Make an API request to Roam
  */
@@ -41,6 +46,7 @@ export async function apiRequest(
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      "User-Agent": ROAM_USER_AGENT,
     },
     body,
     qs,
