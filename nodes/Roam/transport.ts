@@ -11,7 +11,14 @@ import type {
   JsonObject,
 } from "n8n-workflow";
 
+import { version } from "../../package.json";
+
 type RoamFunctions = IExecuteFunctions | ILoadOptionsFunctions | IWebhookFunctions | IHookFunctions;
+
+// Advertised to the Roam appserver on every request for version attribution in
+// logs and Datadog (@plugin.name:n8n-nodes-roam / @plugin.version). Version is
+// read from package.json so a release only bumps it in one place.
+const ROAM_USER_AGENT = `n8n-nodes-roam/${version}`;
 
 /**
  * Make an API request to Roam
@@ -41,6 +48,7 @@ export async function apiRequest(
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      "User-Agent": ROAM_USER_AGENT,
     },
     body,
     qs,
