@@ -15,9 +15,8 @@
 #
 # To upgrade, add @n8n/node-cli@latest as a dev dependency.
 #
-# ─── ONE-TIME SETUP ────────────────────────────────────────────────────────────
+# ─── ONE-TIME SETUP (OIDC Trusted Publishing — no tokens, no stored secrets) ────
 #
-# Option A — OIDC Trusted Publishing (recommended, no long-lived secrets):
 #   1. Log in to npmjs.com and open the n8n-nodes-roam package settings.
 #   2. Under "Publish access" -> "Trusted Publishers", click "Add a publisher".
 #   3. Select GitHub Actions and fill in:
@@ -25,17 +24,8 @@
 #        Repository name:  n8n-nodes-roam
 #        Workflow name:    publish.yml
 #        Environment:      (leave blank)
-#   4. Leave the NPM_TOKEN secret unset. GitHub's OIDC token is used instead —
-#      no secret ever touches the repo settings.
-#
-# Option B — npm Automation Token (fallback):
-#   1. On npmjs.com: Access Tokens -> Generate New Token -> Granular Access Token.
-#      Scope it to this package with "Read and write" publish permission.
-#   2. In GitHub: Settings -> Secrets and variables -> Actions -> New secret.
-#      Name it NPM_TOKEN and paste the token value.
-#
-# Both options work with --provenance. Provenance is signed by GitHub's OIDC
-# infrastructure regardless of how npm authentication is handled.
+#   4. Leave NPM_TOKEN unset. GitHub's OIDC token is exchanged for short-lived
+#      publish credentials — no long-lived secret ever touches the repo.
 #
 # ─── RELEASE PROCESS ───────────────────────────────────────────────────────────
 #
@@ -63,6 +53,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # Don't leave the GITHUB_TOKEN in the local git config after checkout.
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -78,11 +71,7 @@ jobs:
         # In CI, `n8n-node release` runs lint + build, then publishes with
         # NPM_CONFIG_PROVENANCE=true (requires id-token: write above).
         #
-        # Option A (OIDC): leave NPM_TOKEN unset — npm uses the OIDC exchange.
-        # Option B (token): set NPM_TOKEN in repo secrets — written to npm config
-        #   here before publishing.
-        run: |
-          [ -n "$NPM_TOKEN" ] && npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
-          npm run release
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # Auth is npm OIDC trusted publishing — no NPM_TOKEN, no stored secrets.
+        # The trusted publisher is configured on npmjs.com for this repo +
+        # workflow (Settings -> Trusted Publishers).
+        run: npm run release
