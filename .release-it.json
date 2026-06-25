@@ -1,15 +1,8 @@
 {
   "git": {
-    "tagName": "n8n-nodes-roam-v${version}",
-    "changelog": false,
-    "requireCleanWorkingDir": false,
-    "requireBranch": false
+    "tagName": "v${version}"
   },
   "npm": {
-    "publish": true,
     "registry": "https://registry.npmjs.org/"
-  },
-  "github": {
-    "release": false
   }
 }

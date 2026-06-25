@@ -1,9 +1,14 @@
-import type { IAuthenticateGeneric, ICredentialType, INodeProperties } from "n8n-workflow";
+import type { IAuthenticateGeneric, Icon, ICredentialType, INodeProperties } from "n8n-workflow";
 
 export class RoamApi implements ICredentialType {
   name = "roamApi";
 
   displayName = "Roam API";
+
+  icon: Icon = {
+    light: "file:../nodes/Roam/roam.svg",
+    dark: "file:../nodes/Roam/roam.dark.svg",
+  };
 
   description = "API key for accessing Roam services. The API key should have permissions for: chat messaging, groups, user info, recordings, transcripts, meeting links, and webhooks.";
 

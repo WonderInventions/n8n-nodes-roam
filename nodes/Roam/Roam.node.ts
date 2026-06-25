@@ -5,9 +5,10 @@ import type {
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
+  JsonObject,
 } from "n8n-workflow";
 
-import { NodeConnectionType } from "n8n-workflow";
+import { NodeApiError, NodeConnectionTypes } from "n8n-workflow";
 
 import * as meeting from "./resources/meeting";
 import * as message from "./resources/message";
@@ -36,49 +37,6 @@ const loadOptions = {
   },
 };
 
-async function router(this: IExecuteFunctions): Promise<INodeExecutionData[]> {
-  const items = this.getInputData();
-  const operationResult: INodeExecutionData[] = [];
-
-  for (let i = 0; i < items.length; i++) {
-    const resource = this.getNodeParameter<RoamEntity>("resource", i);
-    const operation = this.getNodeParameter("operation", i);
-
-    const roam = {
-      resource,
-      operation,
-    } as RoamEntity;
-
-    try {
-      if (roam.resource === "message") {
-        if (roam.operation === "send") {
-          operationResult.push(...(await message.send.call(this, i)));
-        }
-      } else if (roam.resource === "meeting") {
-        if (roam.operation === "create") {
-          operationResult.push(...(await meeting.create.call(this, i)));
-        }
-      } else if (roam.resource === "transcript") {
-        if (roam.operation === "list") {
-          operationResult.push(...(await transcript.list.call(this, i)));
-        } else if (roam.operation === "info") {
-          operationResult.push(...(await transcript.info.call(this, i)));
-        } else if (roam.operation === "prompt") {
-          operationResult.push(...(await transcript.prompt.call(this, i)));
-        }
-      }
-    } catch (err) {
-      if (this.continueOnFail()) {
-        operationResult.push({ json: this.getInputData(i)[0].json, error: err });
-      } else {
-        throw err;
-      }
-    }
-  }
-
-  return operationResult;
-}
-
 export class Roam implements INodeType {
   description: INodeTypeDescription = {
     name: "roam",
@@ -86,8 +44,9 @@ export class Roam implements INodeType {
     description: "Interact with Roam",
     group: ["transform"],
     icon: { light: "file:roam.svg", dark: "file:roam.dark.svg" },
-    inputs: [NodeConnectionType.Main],
-    outputs: [NodeConnectionType.Main],
+    usableAsTool: true,
+    inputs: [NodeConnectionTypes.Main],
+    outputs: [NodeConnectionTypes.Main],
     credentials: [
       {
         name: "roamApi",
@@ -131,7 +90,50 @@ export class Roam implements INodeType {
     loadOptions,
   };
 
-  async execute(this: IExecuteFunctions) {
-    return [await router.call(this)];
+  async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+    const items = this.getInputData();
+    const operationResult: INodeExecutionData[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const resource = this.getNodeParameter<RoamEntity>("resource", i);
+      const operation = this.getNodeParameter("operation", i);
+
+      const roam = {
+        resource,
+        operation,
+      } as RoamEntity;
+
+      try {
+        if (roam.resource === "message") {
+          if (roam.operation === "send") {
+            operationResult.push(...(await message.send.call(this, i)));
+          }
+        } else if (roam.resource === "meeting") {
+          if (roam.operation === "create") {
+            operationResult.push(...(await meeting.create.call(this, i)));
+          }
+        } else if (roam.resource === "transcript") {
+          if (roam.operation === "list") {
+            operationResult.push(...(await transcript.list.call(this, i)));
+          } else if (roam.operation === "info") {
+            operationResult.push(...(await transcript.info.call(this, i)));
+          } else if (roam.operation === "prompt") {
+            operationResult.push(...(await transcript.prompt.call(this, i)));
+          }
+        }
+      } catch (err) {
+        if (this.continueOnFail()) {
+          operationResult.push({
+            json: this.getInputData(i)[0].json,
+            error: new NodeApiError(this.getNode(), err as JsonObject, { itemIndex: i }),
+            pairedItem: i,
+          });
+          continue;
+        }
+        throw new NodeApiError(this.getNode(), err as JsonObject, { itemIndex: i });
+      }
+    }
+
+    return [operationResult];
   }
 }

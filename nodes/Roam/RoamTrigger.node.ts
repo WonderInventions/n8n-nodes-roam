@@ -8,7 +8,9 @@ import {
   type INodeTypeDescription,
   type IWebhookFunctions,
   type IWebhookResponseData,
-  NodeConnectionType,
+  type JsonObject,
+  NodeApiError,
+  NodeConnectionTypes,
 } from "n8n-workflow";
 
 import { apiRequest } from "./transport";
@@ -35,11 +37,13 @@ export class RoamTrigger implements INodeType {
     group: ["trigger"],
     version: 1,
     description: "Handle Roam webhooks",
+    subtitle: '={{$parameter["event"]}}',
+    usableAsTool: true,
     defaults: {
       name: "Roam Trigger",
     },
     inputs: [],
-    outputs: [NodeConnectionType.Main],
+    outputs: [NodeConnectionTypes.Main],
     credentials: [
       {
         name: "roamApi",
@@ -149,18 +153,33 @@ export class RoamTrigger implements INodeType {
     }
 
     // Manual execution - fetch data from API
-    const listResponse = (await apiRequest.call(
-      this,
-      "GET",
-      mappedEvent.listEndpoint,
-      {}, // body
-      { limit: 1 } // query parameters
-    )) as IDataObject;
+    try {
+      const listResponse = (await apiRequest.call(
+        this,
+        "GET",
+        mappedEvent.listEndpoint,
+        {}, // body
+        { limit: 1 } // query parameters
+      )) as IDataObject;
 
-    const items = ((listResponse[mappedEvent.listProperty] as IDataObject[]) ??
-      []) as IDataObject[];
+      const items = ((listResponse[mappedEvent.listProperty] as IDataObject[]) ??
+        []) as IDataObject[];
 
-    return [this.helpers.returnJsonArray(items)];
+      return [this.helpers.returnJsonArray(items)];
+    } catch (err) {
+      if (this.continueOnFail()) {
+        return [
+          [
+            {
+              json: {},
+              error: new NodeApiError(this.getNode(), err as JsonObject),
+              pairedItem: { item: 0 },
+            },
+          ],
+        ];
+      }
+      throw new NodeApiError(this.getNode(), err as JsonObject);
+    }
   }
 
   async webhook(this: IWebhookFunctions): Promise<IWebhookResponseData> {
