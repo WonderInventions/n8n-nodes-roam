@@ -16,10 +16,37 @@ npm run build:watch     # Watch mode compilation
 npm run dev             # Start n8n in development mode
 npm run lint            # Run ESLint
 npm run lint:fix        # Auto-fix linting issues
-npm run release         # Create and publish a release
 ```
 
 For webhook testing locally, use ngrok: `ngrok http 5678`
+
+## Releasing
+
+Releases are published to npm by GitHub Actions with an **npm provenance**
+attestation — required for n8n Cloud verified community nodes (effective
+2026-05-01). Publishing happens **only in CI**, never from a local machine.
+
+To cut a release:
+
+```bash
+npm version <new-version> --no-git-tag-version   # bump package.json + lockfile
+git commit -am "Release <new-version>"
+git push origin master
+git tag v<new-version> && git push origin v<new-version>
+```
+
+Pushing the `v*.*.*` tag triggers `.github/workflows/publish.yml`, which runs
+`n8n-node release` in CI — it lints, builds, and runs `npm publish` with
+provenance enabled.
+
+- **Do not run `npm run release` locally.** The modern `@n8n/node-cli` (>=0.23)
+  hard-requires the branch be named `main`; this repo releases from `master`,
+  so the local command will fail. Use the tag-push flow above.
+- **Auth is npm OIDC trusted publishing** (no `NPM_TOKEN` secret). The trusted
+  publisher is configured on npmjs.com for repo `WonderInventions/n8n-nodes-roam`,
+  workflow `publish.yml`. If the publish step ever 404s, that mapping is missing.
+- `eslint` is pinned to exactly `9.29.0` (an exact peer dep of `@n8n/node-cli`);
+  don't loosen it or installs will break.
 
 ## Architecture
 
