@@ -26,14 +26,17 @@ Releases are published to npm by GitHub Actions with an **npm provenance**
 attestation — required for n8n Cloud verified community nodes (effective
 2026-05-01). Publishing happens **only in CI**, never from a local machine.
 
+`master` is protected — changes land via a PR with CI (lint + build) green.
 To cut a release:
 
-```bash
-npm version <new-version> --no-git-tag-version   # bump package.json + lockfile
-git commit -am "Release <new-version>"
-git push origin master
-git tag v<new-version> && git push origin v<new-version>
-```
+1. Bump the version on a branch, push, and open a PR:
+   `npm version <new-version> --no-git-tag-version`, commit, push, then merge
+   the PR once CI passes.
+2. Tag the merged commit on `master` and push the tag — this publishes:
+   ```bash
+   git checkout master && git pull
+   git tag v<new-version> && git push origin v<new-version>
+   ```
 
 Pushing the `v*.*.*` tag triggers `.github/workflows/publish.yml`, which runs
 `n8n-node release` in CI — it lints, builds, and runs `npm publish` with
