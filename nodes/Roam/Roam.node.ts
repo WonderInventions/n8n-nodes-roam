@@ -21,6 +21,7 @@ type RoamEntity = RoamType;
 
 const loadOptions = {
   async getGroups(this: ILoadOptionsFunctions): Promise<Array<{ name: string; value: string }>> {
+    // v1 success bodies include `"ok": true` alongside the list field; ignore `ok`.
     const response = (await apiRequest.call(this, "GET", "/v1/groups.list")) as
       | IDataObject[]
       | IDataObject;
@@ -122,15 +123,21 @@ export class Roam implements INodeType {
           }
         }
       } catch (err) {
+        // transport.toNodeApiError already maps Roam codes (token_revoked, transcript_*, …).
+        // Preserve that NodeApiError rather than re-wrapping and losing the message.
+        const apiError =
+          err instanceof NodeApiError
+            ? err
+            : new NodeApiError(this.getNode(), err as JsonObject, { itemIndex: i });
         if (this.continueOnFail()) {
           operationResult.push({
             json: this.getInputData(i)[0].json,
-            error: new NodeApiError(this.getNode(), err as JsonObject, { itemIndex: i }),
+            error: apiError,
             pairedItem: i,
           });
           continue;
         }
-        throw new NodeApiError(this.getNode(), err as JsonObject, { itemIndex: i });
+        throw apiError;
       }
     }
 

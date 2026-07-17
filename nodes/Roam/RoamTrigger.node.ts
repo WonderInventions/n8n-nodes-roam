@@ -167,18 +167,23 @@ export class RoamTrigger implements INodeType {
 
       return [this.helpers.returnJsonArray(items)];
     } catch (err) {
+      // Preserve transport's Roam-mapped NodeApiError (auth/transcript codes).
+      const apiError =
+        err instanceof NodeApiError
+          ? err
+          : new NodeApiError(this.getNode(), err as JsonObject);
       if (this.continueOnFail()) {
         return [
           [
             {
               json: {},
-              error: new NodeApiError(this.getNode(), err as JsonObject),
+              error: apiError,
               pairedItem: { item: 0 },
             },
           ],
         ];
       }
-      throw new NodeApiError(this.getNode(), err as JsonObject);
+      throw apiError;
     }
   }
 
