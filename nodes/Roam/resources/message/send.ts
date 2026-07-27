@@ -7,23 +7,16 @@ import {
 import type { MessageProperties } from '../../interfaces';
 import { apiRequest } from '../../transport';
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const taggedIdPattern = /^[BUVGMSDPC]-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const hexColorPattern = /^#[0-9a-f]{6}$/i;
 
-const toTaggedGroupId = (groupId: string): string => {
-	if (taggedIdPattern.test(groupId)) {
-		return `${groupId[0].toUpperCase()}${groupId.slice(1)}`;
-	}
-
-	if (uuidPattern.test(groupId)) {
-		return `G-${groupId}`;
-	}
-
-	return groupId;
-};
-
-const toAddressId = (groupId: string): string => {
+/**
+ * `/v1/chat.post` takes destinations as plain UUIDs in `groupId` / `chatId` /
+ * `userIds` and rejects the v0 tagged-ID `chat` field outright. The group
+ * dropdown already yields a bare `addressId`, but a hand-written expression may
+ * still supply a legacy `G-…` tagged ID, so strip the tag.
+ */
+export const toAddressId = (groupId: string): string => {
 	if (taggedIdPattern.test(groupId)) {
 		return groupId.slice(2);
 	}
@@ -326,12 +319,13 @@ export async function send(this: IExecuteFunctions, index: number): Promise<INod
 		imageUrl: senderImageUrl,
 	};
 
-	let endpoint = '/v1/chat.sendMessage';
+	// Every formatting mode goes through /v1/chat.post. It supersedes both the
+	// deprecated /v1/chat.sendMessage (plain/markdown) and /v0/chat.post (blocks),
+	// and is the only one of the three that takes v1 destination fields.
+	const endpoint = '/v1/chat.post';
 	let body: IDataObject;
 
 	if (messageFormatting === 'blocks_simple' || messageFormatting === 'blocks_json') {
-		endpoint = '/v0/chat.post';
-
 		let blocks: IDataObject[];
 		if (messageFormatting === 'blocks_simple') {
 			const headerText = this.getNodeParameter('headerText', index, '') as string;
@@ -449,7 +443,7 @@ export async function send(this: IExecuteFunctions, index: number): Promise<INod
 		}
 
 		body = {
-			chat: [toTaggedGroupId(groupId)],
+			groupId: toAddressId(groupId),
 			blocks,
 			sender,
 		};
@@ -460,10 +454,10 @@ export async function send(this: IExecuteFunctions, index: number): Promise<INod
 	} else {
 		const text = this.getNodeParameter('text', index) as string;
 		body = {
+			groupId: toAddressId(groupId),
 			text,
 			markdown: messageFormatting === 'markdown',
 			sender,
-			recipients: [toAddressId(groupId)],
 		};
 	}
 

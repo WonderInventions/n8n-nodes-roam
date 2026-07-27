@@ -11,19 +11,9 @@ import type {
 	JsonObject,
 } from 'n8n-workflow';
 
-import { version } from '../../package.json';
+import { ROAM_API_VERSION, ROAM_USER_AGENT } from './version';
 
 type RoamFunctions = IExecuteFunctions | ILoadOptionsFunctions | IWebhookFunctions | IHookFunctions;
-
-// Advertised to the Roam appserver on every request for version attribution in
-// logs and Datadog (@plugin.name:n8n-nodes-roam / @plugin.version). Version is
-// read from package.json so a release only bumps it in one place.
-const ROAM_USER_AGENT = `n8n-nodes-roam/${version}`;
-
-// Roam API version this node is built against, sent as `Roam-Version` so the
-// v1 response contract is pinned to this release rather than to whenever the
-// API key was created. Bump deliberately, in lockstep with the parsing code.
-const ROAM_API_VERSION = '2026-06-01';
 
 /**
  * Machine-readable Roam API error codes that need a clear, actionable n8n

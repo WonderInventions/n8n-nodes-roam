@@ -1,20 +1,21 @@
 import type { IExecuteFunctions, IDataObject, INodeExecutionData } from 'n8n-workflow';
 import { apiRequest } from '../../transport';
-import type { TranscriptProperties } from '../../interfaces';
+import type { MeetingProperties } from '../../interfaces';
 
-export const promptDescription: TranscriptProperties = [
+export const promptDescription: MeetingProperties = [
 	{
-		displayName: 'Transcript ID',
+		displayName: 'Meeting ID',
 		name: 'id',
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'The UUID of the transcript to query',
+		description:
+			'The UUID of the meeting to query. Get one from List Meetings, or from the meeting.ended event on the Roam Trigger node.',
 		placeholder: 'e.g. a1b2c3d4-e5f6-7890-abcd-ef1234567890',
 		displayOptions: {
 			show: {
 				operation: ['prompt'],
-				resource: ['transcript'],
+				resource: ['meeting'],
 			},
 		},
 	},
@@ -24,14 +25,14 @@ export const promptDescription: TranscriptProperties = [
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'The question or instruction to run against the transcript',
+		description: 'The question or instruction to run against the meeting transcript',
 		typeOptions: {
 			rows: 4,
 		},
 		displayOptions: {
 			show: {
 				operation: ['prompt'],
-				resource: ['transcript'],
+				resource: ['meeting'],
 			},
 		},
 	},
@@ -49,7 +50,7 @@ export async function prompt(
 	const responseData = await apiRequest.call(
 		this,
 		'POST',
-		'/v0/transcript.prompt',
+		'/v1/meeting.prompt',
 		body,
 		{},
 		{ timeout: 60000 },

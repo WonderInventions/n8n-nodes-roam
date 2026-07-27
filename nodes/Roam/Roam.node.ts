@@ -1,42 +1,22 @@
 import type {
-  IDataObject,
   IExecuteFunctions,
-  ILoadOptionsFunctions,
   INodeExecutionData,
   INodeType,
   INodeTypeDescription,
   JsonObject,
 } from "n8n-workflow";
 
-import { NodeApiError, NodeConnectionTypes } from "n8n-workflow";
+import { NodeApiError, NodeConnectionTypes, NodeOperationError } from "n8n-workflow";
 
 import * as meeting from "./resources/meeting";
 import * as message from "./resources/message";
-import * as transcript from "./resources/transcript";
 
 import type { Roam as RoamType } from "./interfaces";
-import { apiRequest } from "./transport";
+import { getGroups } from "./loadOptions";
 
 type RoamEntity = RoamType;
 
-const loadOptions = {
-  async getGroups(this: ILoadOptionsFunctions): Promise<Array<{ name: string; value: string }>> {
-    // v1 success bodies include `"ok": true` alongside the list field; ignore `ok`.
-    const response = (await apiRequest.call(this, "GET", "/v1/groups.list")) as
-      | IDataObject[]
-      | IDataObject;
-
-    const groups = Array.isArray(response)
-      ? response
-      : (((response as IDataObject).groups as IDataObject[]) ?? []);
-
-    return groups.map((group) => ({
-      name: (group.name as string) ?? (group.addressId as string),
-      value: group.addressId as string,
-      description: group.groupType as string | undefined,
-    }));
-  },
-};
+const loadOptions = { getGroups };
 
 export class Roam implements INodeType {
   description: INodeTypeDescription = {
@@ -72,16 +52,11 @@ export class Roam implements INodeType {
             name: "Message",
             value: "message",
           },
-          {
-            name: "Transcript",
-            value: "transcript",
-          },
         ],
         default: "message",
       },
       ...message.messageDescription,
       ...meeting.meetingDescription,
-      ...transcript.transcriptDescription,
     ],
     subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
     version: 1,
@@ -105,6 +80,22 @@ export class Roam implements INodeType {
       } as RoamEntity;
 
       try {
+        if ((resource as string) === "transcript") {
+          // 0.2.0 removed the standalone Transcript resource: v1 keys
+          // transcripts, summaries, and prompts on the meeting, not on a
+          // separate transcript id. Fail loudly with the migration rather than
+          // silently emitting nothing, which is what the old fall-through did.
+          throw new NodeOperationError(
+            this.getNode(),
+            'The "Transcript" resource was removed in n8n-nodes-roam 0.2.0',
+            {
+              itemIndex: i,
+              description:
+                'Use the "Meeting" resource instead: List Transcripts -> List Meetings, Get Transcript Info -> Get Transcript, Prompt Transcript -> Prompt Meeting. These operations take a meeting ID (from List Meetings or the Meeting Ended trigger), not a v0 transcript ID.',
+            },
+          );
+        }
+
         if (roam.resource === "message") {
           if (roam.operation === "send") {
             operationResult.push(...(await message.send.call(this, i)));
@@ -112,21 +103,20 @@ export class Roam implements INodeType {
         } else if (roam.resource === "meeting") {
           if (roam.operation === "create") {
             operationResult.push(...(await meeting.create.call(this, i)));
-          }
-        } else if (roam.resource === "transcript") {
-          if (roam.operation === "list") {
-            operationResult.push(...(await transcript.list.call(this, i)));
-          } else if (roam.operation === "info") {
-            operationResult.push(...(await transcript.info.call(this, i)));
+          } else if (roam.operation === "list") {
+            operationResult.push(...(await meeting.list.call(this, i)));
+          } else if (roam.operation === "transcript") {
+            operationResult.push(...(await meeting.transcript.call(this, i)));
           } else if (roam.operation === "prompt") {
-            operationResult.push(...(await transcript.prompt.call(this, i)));
+            operationResult.push(...(await meeting.prompt.call(this, i)));
           }
         }
       } catch (err) {
-        // transport.toNodeApiError already maps Roam codes (token_revoked, transcript_*, …).
-        // Preserve that NodeApiError rather than re-wrapping and losing the message.
+        // transport.toNodeApiError already maps Roam codes (token_revoked, transcript_*, …),
+        // and NodeOperationError carries our own migration/validation guidance.
+        // Preserve both rather than re-wrapping and losing the message.
         const apiError =
-          err instanceof NodeApiError
+          err instanceof NodeApiError || err instanceof NodeOperationError
             ? err
             : new NodeApiError(this.getNode(), err as JsonObject, { itemIndex: i });
         if (this.continueOnFail()) {

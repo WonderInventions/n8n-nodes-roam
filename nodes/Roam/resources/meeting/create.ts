@@ -81,7 +81,7 @@ export async function create(
 		end: convertToRFC3339(end),
 	};
 
-        const responseData = await apiRequest.call(this, 'POST', '/v0/meetinglink.create', body);
+        const responseData = await apiRequest.call(this, 'POST', '/v1/meeting.link.create', body);
 
         const executionData = this.helpers.returnJsonArray(responseData as IDataObject[]);
 

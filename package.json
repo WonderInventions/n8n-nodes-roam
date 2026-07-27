@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-roam",
-  "version": "0.1.14",
+  "version": "0.2.0",
   "description": "n8n community node to work with the Roam API",
   "license": "MIT",
   "homepage": "https://ro.am",
@@ -21,6 +21,8 @@
     "dev": "n8n-node dev",
     "lint": "n8n-node lint",
     "lint:fix": "n8n-node lint --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "release": "n8n-node release",
     "prepublishOnly": "n8n-node prerelease"
   },
@@ -47,7 +49,8 @@
     "@types/node": "^20.0.0",
     "eslint": "9.29.0",
     "prettier": "^3.6.2",
-    "release-it": "^19.0.4"
+    "release-it": "^19.0.4",
+    "vitest": "^3.2.7"
   },
   "peerDependencies": {
     "n8n-workflow": "*"

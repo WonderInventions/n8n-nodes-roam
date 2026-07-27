@@ -1,5 +1,8 @@
 import type { INodeProperties } from 'n8n-workflow';
 import { createDescription } from './create';
+import { listDescription } from './list';
+import { promptDescription } from './prompt';
+import { transcriptDescription } from './transcript';
 
 const showOnlyForMeetings = {
 	resource: ['meeting'],
@@ -21,10 +24,35 @@ export const meetingDescription: INodeProperties[] = [
 				description: 'Create a meeting link',
 				action: 'Create a meeting link',
 			},
+			{
+				name: 'Get Transcript',
+				value: 'transcript',
+				description: 'Get the transcript cues for a meeting',
+				action: 'Get a meeting transcript',
+			},
+			{
+				name: 'List Meetings',
+				value: 'list',
+				description:
+					'List recorded meetings, optionally with their summary, action items, and chapters',
+				action: 'List meetings',
+			},
+			{
+				name: 'Prompt Meeting',
+				value: 'prompt',
+				description: 'Ask a question about a meeting transcript using AI',
+				action: 'Prompt a meeting',
+			},
 		],
 		default: 'create',
 	},
 	...createDescription,
+	...listDescription,
+	...transcriptDescription,
+	...promptDescription,
 ];
 
 export { create } from './create';
+export { list } from './list';
+export { prompt } from './prompt';
+export { transcript } from './transcript';
