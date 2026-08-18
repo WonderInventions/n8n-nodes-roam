@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   ci:
-    name: Lint, test, and build
+    name: Lint and build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
