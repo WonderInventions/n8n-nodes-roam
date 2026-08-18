@@ -1,20 +1,20 @@
 import type { IExecuteFunctions, IDataObject, INodeExecutionData } from 'n8n-workflow';
 import { apiRequest } from '../../transport';
-import type { TranscriptProperties } from '../../interfaces';
+import type { MeetingProperties } from '../../interfaces';
 
-export const infoDescription: TranscriptProperties = [
+export const infoDescription: MeetingProperties = [
 	{
-		displayName: 'Transcript ID',
+		displayName: 'Meeting ID',
 		name: 'id',
 		type: 'string',
 		required: true,
 		default: '',
-		description: 'The UUID of the transcript to retrieve',
+		description: 'The UUID of the meeting to retrieve',
 		placeholder: 'e.g. a1b2c3d4-e5f6-7890-abcd-ef1234567890',
 		displayOptions: {
 			show: {
 				operation: ['info'],
-				resource: ['transcript'],
+				resource: ['meeting'],
 			},
 		},
 	},
@@ -26,7 +26,7 @@ export async function info(
 ): Promise<INodeExecutionData[]> {
 	const id = this.getNodeParameter('id', index) as string;
 
-	const responseData = await apiRequest.call(this, 'GET', '/v0/transcript.info', {}, { id });
+	const responseData = await apiRequest.call(this, 'GET', '/v1/meeting.info', {}, { id });
 
 	const executionData = this.helpers.returnJsonArray(responseData as IDataObject[]);
 

@@ -21,11 +21,16 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 ## Operations
 
 ### Roam Node
-- **Send Message**: Send messages to Roam groups
+- **Send Message**: Send messages to a group, existing chat, or user DM
 - **Create Meeting Link**: Create new video meeting links
+- **List / Get Meeting**: List meetings or fetch one by ID
+- **Get Transcript**: Fetch transcript cues for a meeting
+- **Prompt Meeting**: Ask a question about a meeting transcript
 
 ### Roam Trigger Node
-- **Webhook Events**: Trigger workflows when webhook events are received from Roam
+- **Meeting Ended / Started**: Trigger when a meeting starts or when its content is ready
+- **New Recording / New Transcript**: Compatibility aliases for Meeting Ended (`hasVideo: true` for recordings)
+- **Chat Message**: Trigger on new, edited, or deleted chat messages
 
 ## Credentials
 
@@ -33,15 +38,16 @@ To use this node, you need to authenticate with Roam's API using OAuth2.
 
 1. Go to your Roam developer account at [developer.ro.am](https://developer.ro.am)
 2. Create an API Key application
-3. Enable permissions corresponding to what you want it to do: 
+3. Enable permissions corresponding to what you want it to do:
   - Actions
-    - Send chat message: `chat:send_message`, `groups:read`
+    - Send chat message: `chat:send_message` or `chat:write`, plus `group:read` (group picker) and `user:read` (DM picker)
     - Create meeting link: `meetinglink:write`
+    - List / get / prompt meetings: `meetings:read`
   - Webhooks: `webhook:write`
-    - New Recording: `recordings:read`
-    - New Transcript: `transcript:read`
-3. In n8n, create a new credential of type "Roam API Key"
-4. Fill in your secret key
+    - Meeting Ended / Started / New Recording / New Transcript: `meetings:read`
+    - Chat Message: `chat:history` (plus `chat:read` for manual trigger tests)
+4. In n8n, create a new credential of type "Roam API Key"
+5. Fill in your secret key
 
 ## Compatibility
 
@@ -76,6 +82,13 @@ To run n8n locally:
 * [Roam Developer Portal](https://developer.ro.am)
 
 ## Version history
+
+### 0.2.0
+- Add node typeVersion 2 on the API v1 surface (`POST /v1/chat.post`, meeting.* endpoints, v1 webhooks)
+- Existing workflows stay on typeVersion 1 (the 0.1.14 behavior) until you add a new Roam node or upgrade the node version in the editor
+- typeVersion 2 Send Message destinations: group, chat ID, or user DM
+- typeVersion 2 Meeting list / info / transcript / prompt replace the Transcript resource
+- typeVersion 2 trigger events: Meeting Ended, Meeting Started, Chat Message
 
 ### 0.1.1
 - Initial release

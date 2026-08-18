@@ -1,4 +1,4 @@
-# Lints and builds the package on every pull request and on pushes to master.
+# Lints, tests, and builds the package on every pull request and on pushes to master.
 # This is the status check enforced by branch protection on `master`.
 
 name: CI
@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   ci:
-    name: Lint and build
+    name: Lint, test, and build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -35,4 +35,5 @@ jobs:
 
       - run: npm ci
       - run: npm run lint
+      - run: npm test
       - run: npm run build

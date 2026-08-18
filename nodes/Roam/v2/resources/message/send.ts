@@ -7,31 +7,62 @@ import {
 import type { MessageProperties } from '../../interfaces';
 import { apiRequest } from '../../transport';
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const taggedIdPattern = /^[BUVGMSDPC]-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const hexColorPattern = /^#[0-9a-f]{6}$/i;
 
-const toTaggedGroupId = (groupId: string): string => {
-	if (taggedIdPattern.test(groupId)) {
-		return `${groupId[0].toUpperCase()}${groupId.slice(1)}`;
+// v1 destinations are plain UUIDs. Strip a leftover tagged prefix (G-/U-/…)
+// so saved expressions from the v0 Block Kit path still resolve.
+export const toPlainUuid = (id: string): string => {
+	if (taggedIdPattern.test(id)) {
+		return id.slice(2);
 	}
 
-	if (uuidPattern.test(groupId)) {
-		return `G-${groupId}`;
-	}
-
-	return groupId;
+	return id;
 };
 
-const toAddressId = (groupId: string): string => {
-	if (taggedIdPattern.test(groupId)) {
-		return groupId.slice(2);
+export function applyChatPostDestination(
+	body: IDataObject,
+	destinationType: string,
+	id: string,
+): IDataObject {
+	const uuid = toPlainUuid(id);
+	if (destinationType === 'chat') {
+		body.chatId = uuid;
+	} else if (destinationType === 'user') {
+		body.userIds = [uuid];
+	} else {
+		body.groupId = uuid;
 	}
-
-	return groupId;
-};
+	return body;
+}
 
 export const sendDescription: MessageProperties = [
+	{
+		displayName: 'Destination',
+		name: 'destinationType',
+		type: 'options',
+		options: [
+			{
+				name: 'Group',
+				value: 'group',
+			},
+			{
+				name: 'Chat',
+				value: 'chat',
+			},
+			{
+				name: 'User (DM)',
+				value: 'user',
+			},
+		],
+		default: 'group',
+		displayOptions: {
+			show: {
+				operation: ['send'],
+				resource: ['message'],
+			},
+		},
+	},
 	{
 		displayName: 'Group Name or ID',
 		name: 'groupId',
@@ -47,6 +78,43 @@ export const sendDescription: MessageProperties = [
 			show: {
 				operation: ['send'],
 				resource: ['message'],
+			},
+			hide: {
+				destinationType: ['chat', 'user'],
+			},
+		},
+	},
+	{
+		displayName: 'Chat ID',
+		name: 'chatId',
+		type: 'string',
+		required: true,
+		default: '',
+		description: 'Existing chat UUID (for example from a Chat Message trigger)',
+		displayOptions: {
+			show: {
+				operation: ['send'],
+				resource: ['message'],
+				destinationType: ['chat'],
+			},
+		},
+	},
+	{
+		displayName: 'User Name or ID',
+		name: 'userId',
+		type: 'options',
+		description:
+			'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+		typeOptions: {
+			loadOptionsMethod: 'getUsers',
+		},
+		required: true,
+		default: '',
+		displayOptions: {
+			show: {
+				operation: ['send'],
+				resource: ['message'],
+				destinationType: ['user'],
 			},
 		},
 	},
@@ -312,13 +380,50 @@ export const sendDescription: MessageProperties = [
 			},
 		},
 	},
+	{
+		displayName: 'Additional Fields',
+		name: 'additionalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				operation: ['send'],
+				resource: ['message'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Thread Timestamp',
+				name: 'threadTimestamp',
+				type: 'number',
+				default: 0,
+				description: 'Parent message timestamp (unix microseconds) to reply in a thread',
+			},
+			{
+				displayName: 'Thread Key',
+				name: 'threadKey',
+				type: 'string',
+				default: '',
+				description: 'Stable key that creates or reuses a thread in a group chat (max 64 characters)',
+			},
+			{
+				displayName: 'Reply Timestamp',
+				name: 'replyTimestamp',
+				type: 'number',
+				default: 0,
+				description: 'Timestamp of the message being replied to (DMs or in-thread only)',
+			},
+		],
+	},
 ];
 
 export async function send(this: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
 	const messageFormatting = this.getNodeParameter('messageFormatting', index, 'markdown') as string;
 	const botName = this.getNodeParameter('botName', index) as string;
 	const senderImageUrl = this.getNodeParameter('senderImageUrl', index) as string;
-	const groupId = this.getNodeParameter('groupId', index) as string;
+	const destinationType = this.getNodeParameter('destinationType', index, 'group') as string;
+	const additionalFields = this.getNodeParameter('additionalFields', index, {}) as IDataObject;
 
 	const sender: IDataObject = {
 		id: '_',
@@ -326,12 +431,20 @@ export async function send(this: IExecuteFunctions, index: number): Promise<INod
 		imageUrl: senderImageUrl,
 	};
 
-	let endpoint = '/v1/chat.sendMessage';
-	let body: IDataObject;
+	const body: IDataObject = {
+		sender,
+		sync: true,
+	};
+
+	const destinationId =
+		destinationType === 'chat'
+			? (this.getNodeParameter('chatId', index) as string)
+			: destinationType === 'user'
+				? (this.getNodeParameter('userId', index) as string)
+				: (this.getNodeParameter('groupId', index) as string);
+	applyChatPostDestination(body, destinationType, destinationId);
 
 	if (messageFormatting === 'blocks_simple' || messageFormatting === 'blocks_json') {
-		endpoint = '/v0/chat.post';
-
 		let blocks: IDataObject[];
 		if (messageFormatting === 'blocks_simple') {
 			const headerText = this.getNodeParameter('headerText', index, '') as string;
@@ -448,26 +561,29 @@ export async function send(this: IExecuteFunctions, index: number): Promise<INod
 			color = customHex;
 		}
 
-		body = {
-			chat: [toTaggedGroupId(groupId)],
-			blocks,
-			sender,
-		};
-
+		body.blocks = blocks;
 		if (color) {
 			body.color = color;
 		}
 	} else {
-		const text = this.getNodeParameter('text', index) as string;
-		body = {
-			text,
-			markdown: messageFormatting === 'markdown',
-			sender,
-			recipients: [toAddressId(groupId)],
-		};
+		body.text = this.getNodeParameter('text', index) as string;
+		body.markdown = messageFormatting === 'markdown';
 	}
 
-	const responseData = await apiRequest.call(this, 'POST', endpoint, body);
+	const threadTimestamp = additionalFields.threadTimestamp as number | undefined;
+	if (threadTimestamp) {
+		body.threadTimestamp = threadTimestamp;
+	}
+	const threadKey = additionalFields.threadKey as string | undefined;
+	if (threadKey) {
+		body.threadKey = threadKey;
+	}
+	const replyTimestamp = additionalFields.replyTimestamp as number | undefined;
+	if (replyTimestamp) {
+		body.replyTimestamp = replyTimestamp;
+	}
+
+	const responseData = await apiRequest.call(this, 'POST', '/v1/chat.post', body);
 
 	const executionData = this.helpers.returnJsonArray(responseData as IDataObject[]);
 

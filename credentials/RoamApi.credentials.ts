@@ -10,7 +10,7 @@ export class RoamApi implements ICredentialType {
     dark: "file:../nodes/Roam/roam.dark.svg",
   };
 
-  description = "API key for accessing Roam services. The API key should have permissions for: chat messaging, groups, user info, recordings, transcripts, meeting links, and webhooks.";
+  description = "API key for accessing Roam services. The API key should have permissions for: chat messaging, groups, users, meetings, meeting links, and webhooks.";
 
   // Link to your community node's README
   documentationUrl = "https://developer.ro.am/";
@@ -49,8 +49,8 @@ export class RoamApi implements ICredentialType {
   test = {
     request: {
       baseURL: '={{ $credentials.baseUrl }}',
-      // Local Development: Set this to http://localhost:5587/v0/token.info
-      url: `/v0/token.info`,
+      // Local Development: Set this to http://localhost:5587/v1/token.info
+      url: `/v1/token.info`,
     },
   };
 }
