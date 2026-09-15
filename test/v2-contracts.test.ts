@@ -66,6 +66,16 @@ describe('unwrapWebhookPayload', () => {
 		const body = { recordingId: 'rec-1' };
 		expect(unwrapWebhookPayload(body)).toEqual(body);
 	});
+
+	it('drops the dual-delivery legacy tagged-id body', () => {
+		expect(
+			unwrapWebhookPayload({
+				type: 'message',
+				sender: 'B-aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+				chat: 'D-aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+			}),
+		).toBeNull();
+	});
 });
 
 describe('buildWebhookSubscribeBody', () => {

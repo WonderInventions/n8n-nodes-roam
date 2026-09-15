@@ -1,0 +1,26 @@
+{
+	"name": "Roam smoke: v2 meeting.ended trigger",
+	"nodes": [
+		{
+			"parameters": {
+				"event": "meetingEnded"
+			},
+			"id": "trigger",
+			"name": "Roam Trigger",
+			"type": "__ROAM_TRIGGER_TYPE__",
+			"typeVersion": 2,
+			"position": [0, 0],
+			"webhookId": "roam-smoke-v2-trigger",
+			"credentials": {
+				"roamApi": {
+					"id": "__CREDENTIAL_ID__",
+					"name": "Roam Local Smoke"
+				}
+			}
+		}
+	],
+	"connections": {},
+	"settings": {
+		"executionOrder": "v1"
+	}
+}

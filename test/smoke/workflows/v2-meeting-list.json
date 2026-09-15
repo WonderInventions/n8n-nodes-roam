@@ -1,0 +1,45 @@
+{
+	"name": "Roam smoke: v2 meeting list",
+	"nodes": [
+		{
+			"parameters": {
+				"httpMethod": "POST",
+				"path": "roam-smoke-v2-meetings",
+				"responseMode": "lastNode",
+				"options": {}
+			},
+			"id": "webhook",
+			"name": "Webhook",
+			"type": "n8n-nodes-base.webhook",
+			"typeVersion": 2,
+			"position": [0, 0],
+			"webhookId": "roam-smoke-v2-meetings"
+		},
+		{
+			"parameters": {
+				"resource": "meeting",
+				"operation": "list",
+				"limit": 5
+			},
+			"id": "roam",
+			"name": "Roam",
+			"type": "__ROAM_TYPE__",
+			"typeVersion": 2,
+			"position": [280, 0],
+			"credentials": {
+				"roamApi": {
+					"id": "__CREDENTIAL_ID__",
+					"name": "Roam Local Smoke"
+				}
+			}
+		}
+	],
+	"connections": {
+		"Webhook": {
+			"main": [[{ "node": "Roam", "type": "main", "index": 0 }]]
+		}
+	},
+	"settings": {
+		"executionOrder": "v1"
+	}
+}

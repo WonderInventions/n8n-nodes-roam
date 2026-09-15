@@ -17,6 +17,7 @@ npm run dev             # Start n8n in development mode
 npm run lint            # Run ESLint
 npm run lint:fix        # Auto-fix linting issues
 npm test                # Unit tests (v2 contracts + v1 endpoint lock)
+npm run test:smoke      # Real n8n workflows against local appserver (see test/smoke/README.md)
 ```
 
 For webhook testing locally, use ngrok: `ngrok http 5678`
@@ -70,13 +71,13 @@ nodes/Roam/
 └── v2/                     # API v1 (typeVersion 2)
     ├── RoamV2.node.ts
     ├── RoamTriggerV2.node.ts
-    ├── transport.ts        # Pins Roam-Version 2026-08-07
+    ├── transport.ts        # Pins Roam-Version 2026-08-25
     └── resources/          # chat.post + meeting.*
 ```
 
 ### Key Components
 
-**Transport Layer** (`transport.ts`): All API calls go through `apiRequest()` which handles authentication, base URL construction, headers, and error conversion to `NodeApiError`. `Roam-Version` defaults to `2026-06-01` (typeVersion 1). typeVersion 2 calls go through `v2/transport.ts`, which pins `2026-08-07`.
+**Transport Layer** (`transport.ts`): All API calls go through `apiRequest()` which handles authentication, base URL construction, headers, and error conversion to `NodeApiError`. `Roam-Version` defaults to `2026-06-01` (typeVersion 1). typeVersion 2 calls go through `v2/transport.ts`, which pins `2026-08-25` (current Latest).
 
 **Credential System** (`credentials/RoamApi.credentials.ts`): API Key authentication with configurable `baseUrl` (defaults to `https://api.ro.am`). Validates credentials via `/v1/token.info`.
 

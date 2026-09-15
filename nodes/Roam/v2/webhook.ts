@@ -36,16 +36,35 @@ export const V2_EVENT_MAP: Record<string, V2EventConfig> = {
 	},
 };
 
-export function unwrapWebhookPayload(body: IDataObject): IDataObject {
+/**
+ * v1 currently dual-delivers one event as two POSTs with the same webhook-id:
+ * a legacy tagged-id body (`type` is a short discriminator like `"message"`)
+ * and a v1 envelope (`type` is the dotted event name, payload under `data`).
+ * Prefer the envelope; return null so the trigger ignores the leftover.
+ */
+export function unwrapWebhookPayload(body: IDataObject): IDataObject | null {
 	const data = body.data;
-	if (data && typeof data === 'object' && !Array.isArray(data)) {
+	const type = body.type;
+	const isEnvelope =
+		typeof type === 'string' &&
+		type.includes('.') &&
+		data !== undefined &&
+		typeof data === 'object' &&
+		!Array.isArray(data);
+
+	if (isEnvelope) {
 		return {
 			...(data as IDataObject),
-			eventType: body.type,
+			eventType: type,
 			eventId: body.eventId,
 			apiVersion: body.apiVersion,
 		};
 	}
+
+	if (typeof type === 'string' && !type.includes('.')) {
+		return null;
+	}
+
 	return body;
 }
 

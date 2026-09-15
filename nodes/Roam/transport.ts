@@ -23,7 +23,7 @@ const ROAM_USER_AGENT = `n8n-nodes-roam/${version}`;
 // Date-version pins sent as `Roam-Version`. Default is the published 0.1.14
 // pin so node typeVersion 1 is unchanged. typeVersion 2 passes V2 explicitly.
 export const ROAM_API_VERSION_V1 = '2026-06-01';
-export const ROAM_API_VERSION_V2 = '2026-08-07';
+export const ROAM_API_VERSION_V2 = '2026-08-25';
 
 /**
  * Machine-readable Roam API error codes that need a clear, actionable n8n

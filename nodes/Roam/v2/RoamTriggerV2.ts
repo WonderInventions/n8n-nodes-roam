@@ -55,7 +55,8 @@ export class RoamTriggerV2 implements INodeType {
             {
               name: "Chat Message",
               value: "chatMessage",
-              description: "Triggers when a chat message is created, edited, or deleted",
+              description:
+                "Triggers when a chat message is created, edited, or deleted. Organization bots only receive group messages for chats they are a member of (API 2026-08-20).",
             },
             {
               name: "Meeting Ended",
@@ -247,7 +248,13 @@ export class RoamTriggerV2 implements INodeType {
     const body = this.getBodyData();
 
     const responseData = Array.isArray(body) ? body : [body];
-    const unwrapped = responseData.map((item) => unwrapWebhookPayload(item as IDataObject));
+    const unwrapped = responseData
+      .map((item) => unwrapWebhookPayload(item as IDataObject))
+      .filter((item): item is IDataObject => item !== null);
+
+    if (unwrapped.length === 0) {
+      return { workflowData: [] };
+    }
 
     return {
       workflowData: [this.helpers.returnJsonArray(unwrapped)],

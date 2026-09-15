@@ -75,6 +75,14 @@ To run n8n locally:
 - Run `ngrok http 5678` to support incoming webhooks. Set `WEBHOOK_URL` to the ngrok URL.
 - Run `npm run dev`
 
+Against a local appserver (`http://localhost:5587`):
+
+```bash
+ROAM_API_KEY=rk_... npm run test:smoke
+```
+
+See `test/smoke/README.md`.
+
 ## Resources
 
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
@@ -89,6 +97,7 @@ To run n8n locally:
 - typeVersion 2 Send Message destinations: group, chat ID, or user DM
 - typeVersion 2 Meeting list / info / transcript / prompt replace the Transcript resource
 - typeVersion 2 trigger events: Meeting Ended, Meeting Started, Chat Message
+- typeVersion 2 pins `Roam-Version: 2026-08-25` (current Latest)
 
 ### 0.1.1
 - Initial release

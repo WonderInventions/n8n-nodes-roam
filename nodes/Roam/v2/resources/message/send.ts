@@ -135,6 +135,8 @@ export const sendDescription: MessageProperties = [
 		name: 'senderImageUrl',
 		type: 'string',
 		default: '',
+		description:
+			'Optional per-message avatar. From API version 2026-08-25 this must be a Roam-hosted avatar URL from asset.create (purpose "avatar"), not a third-party image. Leave empty to use the app profile image.',
 		displayOptions: {
 			show: {
 				operation: ['send'],
@@ -428,8 +430,10 @@ export async function send(this: IExecuteFunctions, index: number): Promise<INod
 	const sender: IDataObject = {
 		id: '_',
 		name: botName,
-		imageUrl: senderImageUrl,
 	};
+	if (senderImageUrl) {
+		sender.imageUrl = senderImageUrl;
+	}
 
 	const body: IDataObject = {
 		sender,
