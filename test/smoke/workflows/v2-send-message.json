@@ -1,0 +1,50 @@
+{
+	"name": "Roam smoke: v2 send message",
+	"nodes": [
+		{
+			"parameters": {
+				"httpMethod": "POST",
+				"path": "roam-smoke-v2-send",
+				"responseMode": "lastNode",
+				"options": {}
+			},
+			"id": "webhook",
+			"name": "Webhook",
+			"type": "n8n-nodes-base.webhook",
+			"typeVersion": 2,
+			"position": [0, 0],
+			"webhookId": "roam-smoke-v2-send"
+		},
+		{
+			"parameters": {
+				"resource": "message",
+				"operation": "send",
+				"destinationType": "group",
+				"groupId": "__GROUP_ID__",
+				"botName": "n8n-smoke",
+				"senderImageUrl": "",
+				"messageFormatting": "markdown",
+				"text": "__MESSAGE_TEXT__"
+			},
+			"id": "roam",
+			"name": "Roam",
+			"type": "__ROAM_TYPE__",
+			"typeVersion": 2,
+			"position": [280, 0],
+			"credentials": {
+				"roamApi": {
+					"id": "__CREDENTIAL_ID__",
+					"name": "Roam Local Smoke"
+				}
+			}
+		}
+	],
+	"connections": {
+		"Webhook": {
+			"main": [[{ "node": "Roam", "type": "main", "index": 0 }]]
+		}
+	},
+	"settings": {
+		"executionOrder": "v1"
+	}
+}

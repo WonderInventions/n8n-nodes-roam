@@ -1,5 +1,5 @@
 import type { IExecuteFunctions, IDataObject, INodeExecutionData } from 'n8n-workflow';
-import { apiRequest } from '../../transport';
+import { apiRequest } from '../../../transport';
 import type { TranscriptProperties } from '../../interfaces';
 
 export const promptDescription: TranscriptProperties = [

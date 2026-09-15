@@ -5,7 +5,7 @@ import {
 	type INodeExecutionData,
 } from 'n8n-workflow';
 import type { MessageProperties } from '../../interfaces';
-import { apiRequest } from '../../transport';
+import { apiRequest } from '../../../transport';
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const taggedIdPattern = /^[BUVGMSDPC]-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

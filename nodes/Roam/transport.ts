@@ -20,10 +20,10 @@ type RoamFunctions = IExecuteFunctions | ILoadOptionsFunctions | IWebhookFunctio
 // read from package.json so a release only bumps it in one place.
 const ROAM_USER_AGENT = `n8n-nodes-roam/${version}`;
 
-// Roam API version this node is built against, sent as `Roam-Version` so the
-// v1 response contract is pinned to this release rather than to whenever the
-// API key was created. Bump deliberately, in lockstep with the parsing code.
-const ROAM_API_VERSION = '2026-06-01';
+// Date-version pins sent as `Roam-Version`. Default is the published 0.1.14
+// pin so node typeVersion 1 is unchanged. typeVersion 2 passes V2 explicitly.
+export const ROAM_API_VERSION_V1 = '2026-06-01';
+export const ROAM_API_VERSION_V2 = '2026-08-25';
 
 /**
  * Machine-readable Roam API error codes that need a clear, actionable n8n
@@ -57,7 +57,7 @@ const ROAM_ERROR_GUIDANCE: Record<string, { message: string; description: string
 	transcript_pending: {
 		message: 'Transcript is not ready yet',
 		description:
-			'The meeting is in progress or the transcript is still processing. Retry later (often after ~60s; honor Retry-After if present), or use a Roam Trigger (New Transcript) instead of polling.',
+			'The meeting is in progress or the transcript is still processing. Retry later (often after ~60s; honor Retry-After if present), or use a Roam Trigger (Meeting Ended) instead of polling.',
 	},
 	transcript_unavailable: {
 		message: 'Transcript is unavailable',
@@ -67,7 +67,12 @@ const ROAM_ERROR_GUIDANCE: Record<string, { message: string; description: string
 	transcript_not_found: {
 		message: 'Transcript not found',
 		description:
-			'No transcript exists for this ID. If the meeting recently ended, content may still be processing — prefer a New Transcript trigger, or use a meeting-id transcript endpoint rather than tight polling.',
+			'No transcript exists for this meeting. If the meeting recently ended, content may still be processing — prefer a Meeting Ended trigger rather than tight polling.',
+	},
+	meeting_not_found: {
+		message: 'Meeting not found',
+		description:
+			'No meeting exists for this ID, or this API key cannot access it. Confirm the meeting ID and that the key has meetings:read.',
 	},
 	missing_scope: {
 		message: 'Roam API key is missing a required scope',
@@ -236,13 +241,17 @@ export function toNodeApiError(node: ReturnType<RoamFunctions['getNode']>, error
 /**
  * Make an API request to Roam
  */
+export type RoamRequestOptions = Partial<IHttpRequestOptions> & {
+	roamVersion?: string;
+};
+
 export async function apiRequest(
 	this: RoamFunctions,
 	method: 'GET' | 'POST' | 'PUT' | 'DELETE',
 	endpoint: string,
 	body: IDataObject = {},
 	qs: IDataObject = {},
-	optionOverrides: Partial<IHttpRequestOptions> = {},
+	optionOverrides: RoamRequestOptions = {},
 ) {
 	const credentials = (await this.getCredentials('roamApi')) as
 		| (ICredentialDataDecryptedObject & { baseUrl?: string })
@@ -253,6 +262,7 @@ export async function apiRequest(
 	}
 
 	const baseUrl = (credentials.baseUrl as string | undefined) ?? 'https://api.ro.am';
+	const { roamVersion = ROAM_API_VERSION_V1, ...httpOverrides } = optionOverrides;
 
 	const requestOptions: IHttpRequestOptions = {
 		method: method as IHttpRequestMethods,
@@ -262,11 +272,11 @@ export async function apiRequest(
 			Accept: 'application/json',
 			'Content-Type': 'application/json',
 			'User-Agent': ROAM_USER_AGENT,
-			'Roam-Version': ROAM_API_VERSION,
+			'Roam-Version': roamVersion,
 		},
 		body,
 		qs,
-		...optionOverrides,
+		...httpOverrides,
 	};
 
 	if (Object.keys(requestOptions.body as IDataObject).length === 0) {
@@ -282,4 +292,43 @@ export async function apiRequest(
 	} catch (error) {
 		throw toNodeApiError(this.getNode(), error);
 	}
+}
+
+const LIST_ALL_PAGES_MAX = 50;
+
+/**
+ * Walk a cursor-paginated v1 list endpoint and return every item.
+ * Used by dropdown loaders (groups, users) so the picker is complete.
+ */
+export async function apiRequestAllPages(
+	this: RoamFunctions,
+	endpoint: string,
+	listKey: string,
+	qs: IDataObject = {},
+	roamVersion: string = ROAM_API_VERSION_V1,
+): Promise<IDataObject[]> {
+	const items: IDataObject[] = [];
+	let cursor: string | undefined;
+	const limit = typeof qs.limit === 'number' ? qs.limit : 100;
+
+	for (let page = 0; page < LIST_ALL_PAGES_MAX; page++) {
+		const pageQs: IDataObject = { ...qs, limit };
+		if (cursor) {
+			pageQs.cursor = cursor;
+		}
+
+		const response = (await apiRequest.call(this, 'GET', endpoint, {}, pageQs, {
+			roamVersion,
+		})) as IDataObject;
+		const pageItems = (response[listKey] as IDataObject[]) ?? [];
+		items.push(...pageItems);
+
+		const next = response.nextCursor;
+		if (typeof next !== 'string' || next.length === 0 || pageItems.length === 0) {
+			break;
+		}
+		cursor = next;
+	}
+
+	return items;
 }
